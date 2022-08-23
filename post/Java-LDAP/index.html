@@ -1,0 +1,456 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>在 Java 使用 LDAP 进行用户操作 | 埋頭做事，抬頭裝逼</title>
+
+<link rel="shortcut icon" href="https://ikerwin.com/favicon.ico?v=1661266781801">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ikerwin.com/styles/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script>
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            埋頭做事，抬頭裝逼
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1661266781801" action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    在 Java 使用 LDAP 进行用户操作
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2017-03-31 ·
+                    </time>
+                    
+                        <a href="https://ikerwin.com/tag/bPJunqDxx/" class="post-tags">
+                            # Java
+                        </a>
+                    
+                </div>
+                <div class="post-content">
+                    <p>前一段时间单位的统一身份认证系统进行了升级，新版本不支持接口认证，就只能摸索一下和 LDAP 的对接。也鼓捣了一段时间，在这记录一下。</p>
+<!--more-->
+<h2 id="简介">简介</h2>
+<p>LDAP 是轻量目录访问协议(Lightweight Directory Access Protocol)的缩写，LDAP 是从 X.500 目录访问协议的基础上发展过来的。与LDAP一样提供类似的目录服务软件还有 <a href="http://directory.apache.org/apacheds/">ApacheDS</a>、<a href="https://technet.microsoft.com/en-us/library/dd448614.aspx">Active Directory</a>、<a href="http://www.redhat.com/en/technologies/cloud-computing/directory-server">Red Hat Directory Service</a>。</p>
+<h2 id="特点">特点</h2>
+<ul>
+<li>LDAP 的结构用树来表示，称为目录信息树（DIT）。正因为这样，就不能用 SQL 语句了</li>
+<li>LDAP 可以很快地得到查询结果，不过在写方面，就慢得多</li>
+<li>LDAP 提供了静态数据的快速查询方式</li>
+<li>Client/Server 模型，Server 用于存储数据，Client 提供操作目录信息树的工具</li>
+<li>这些工具可以将数据库的内容以文本格式（LDAP 数据交换格式，LDIF）呈现在您的面前</li>
+<li>LDAP 是一种开放 Internet 标准，LDAP 协议是跨平台的 Interent 协议</li>
+<li>LDAP 的体系结构由信息模型（信息表示方式）、命名模型（数据组织方式）、功能模型（数据操作访问方式）以及安全模型4种基本模型组成。</li>
+</ul>
+<h2 id="基本概念">基本概念</h2>
+<figure data-type="image" tabindex="1"><img src="https://img.ikerwin.com/blog/2017-05-18-ldap_tree.png" alt="示例" loading="lazy"></figure>
+<h3 id="entry">Entry</h3>
+<p><strong>条目（Entry）</strong>，也叫记录项，是 LDAP 中最基本的颗粒，就像字典中的词条，或者是数据库中的记录。通常对 LDAP 的添加、删除、更改、检索都是以条目为基本对象的。</p>
+<p><code>dn</code>：每一个条目都有一个唯一的标识名（distinguished Name ，DN）。通过 DN 的层次型语法结构，可以方便地表示出条目在 LDAP 树中的位置，通常用于检索。从子树向根节点推。如示例中要获取 tom 这个节点，dn 应该为 <code>cn=tom,ou=student,ou=people,dc=domain,dc=org</code>。</p>
+<p><code>rdn</code>：一般指 dn 逗号最左边的部分，即叶子节点，如 <code>cn=tom</code> 。它与 RootDN 不同，RootDN 通常与 RootPW 同时出现，特指管理 LDAP 中信息的最高权限用户。</p>
+<p><code>Base DN</code>：LDAP 目录树的最顶部就是根。</p>
+<h3 id="attribute">Attribute</h3>
+<p>每个条目都拥有很多<strong>属性（Attribute）</strong>，比如姓名、电话、密码等。每个属性都有名称和对应的属性值，属性值可以有多个。</p>
+<p>属性不是随便定义的，需要符合一定的规则，而这个规则可以通过 schema 制定。比如，如果一个 entry 没有包含在 inetorgperson 这个 schema 中的 objectClass: inetOrgPerson，那么就不能为它指定 employeeNumber 属性，因为 employeeNumber 是在 inetOrgPerson 中定义的。</p>
+<p>LDAP 为人员组织机构中常见的对象都设计了属性(比如commonName，surname)。下面有一些常用的别名：</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Alias</th>
+<th>objectClass</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cn</td>
+<td>commonName</td>
+<td>person</td>
+<td>姓名</td>
+</tr>
+<tr>
+<td>dc</td>
+<td>domainComponent</td>
+<td>dcObject</td>
+<td>域名</td>
+</tr>
+<tr>
+<td>mail</td>
+<td>rfc822Mailbox</td>
+<td>inetOrgPerson</td>
+<td>邮箱</td>
+</tr>
+<tr>
+<td>o</td>
+<td>organizationName</td>
+<td>organization</td>
+<td>组织（公司）名称</td>
+</tr>
+<tr>
+<td>ou</td>
+<td>organizationalUnitName</td>
+<td>organizationalUnit</td>
+<td>单位（部门）名称</td>
+</tr>
+<tr>
+<td>sn</td>
+<td>surname</td>
+<td>person</td>
+<td>姓</td>
+</tr>
+<tr>
+<td>userPassword</td>
+<td>-</td>
+<td>organization</td>
+<td>密码</td>
+</tr>
+<tr>
+<td>uid</td>
+<td>userid</td>
+<td>account</td>
+<td>用户名</td>
+</tr>
+</tbody>
+</table>
+<h3 id="objectclass">objectClass</h3>
+<p><strong>对象类（objectClass）</strong> 是属性的集合，LDAP 预想了很多人员组织机构中常见的对象，并将其封装成对象类。比如人员（person）含有姓（sn）、名（cn）、电话(telephoneNumber)、密码(userPassword)等属性，单位职工(organizationalPerson)是人员(person)的继承类，除了上述属性之外还含有职务（title）、邮政编码（postalCode）、通信地址(postalAddress)等属性。</p>
+<p>通过对象类可以方便的定义条目类型。每个条目可以直接继承多个对象类，这样就继承了各种属性。如果2个对象类中有相同的属性，则条目继承后只会保留1个属性。对象类同时也规定了哪些属性是基本信息，必须含有(Must 或 Required，必要属性)：哪些属性是扩展信息，可以含有（May 或 Optional，可选属性）。</p>
+<p>对象类有三种类型：结构类型（Structural）、抽象类型(Abstract)和辅助类型（Auxiliary）。结构类型是最基本的类型，它规定了对象实体的基本属性，每个条目属于且仅属于一个结构型对象类。抽象类型可以是结构类型或其他抽象类型父类，它将对象属性中共性的部分组织在一起，称为其他类的模板，条目不能直接集成抽象型对象类。辅助类型规定了对象实体的扩展属性。每个条目至少有一个结构性对象类。</p>
+<h3 id="schema">schema</h3>
+<p>对象类（ObjectClass）、属性类型（AttributeType）、语法（Syntax）分别约定了条目、属性、值。所以这些构成了模式(Schema)——对象类的集合。条目数据在导入时通常需要接受模式检查，它确保了目录中所有的条目数据结构都是一致的。</p>
+<figure data-type="image" tabindex="2"><img src="https://img.ikerwin.com/blog/2017-05-18-ldap_dit_obj_sup.png" alt="四者关系" loading="lazy"></figure>
+<h2 id="编码">编码</h2>
+<h3 id="创建-ldap-工具类">创建 LDAP 工具类</h3>
+<p>其中 <code>getCtx()</code> 方法用于与 LDAP 服务器建立连接，<code>verifyPwd(String ldapPwd, String inputPwd)</code> 用于判断用户输入的密码与 LDAP 中的密码是否匹配。LDAP 中的用户密码有多种加密方式，如 <code>userPassword</code> 是使用 SSHA 散列的，<code>otherPassword</code> 是使用 NT HASH 散列等。这边判断的是 <code>userPassword</code>，故将输入的明文密码转换成 SSHA 码后进行匹配。</p>
+<pre><code class="language-java">import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+
+import com.novell.ldap.util.Base64;
+
+public class LdapUtil {
+	
+	private static final String ACCOUNT = &quot;account&quot;;
+	private static final String PASSWORD = &quot;password&quot;;
+	private static final String URL = &quot;ldap://127.0.0.1:389/&quot;;
+	private static final String FACTORY = &quot;com.sun.jndi.ldap.LdapCtxFactory&quot;;
+	private static final String SEARCH_DN = &quot;,ou=Manager,dc=something,dc=com&quot;;
+
+	private static DirContext ctx = null;
+	
+	public static DirContext getCtx() {
+		if (ctx != null) {
+			return ctx;
+		}
+		
+		Hashtable&lt;String, String&gt; env = new Hashtable&lt;&gt;();
+		env.put(Context.INITIAL_CONTEXT_FACTORY, FACTORY);
+		env.put(Context.PROVIDER_URL, URL);
+	   env.put(Context.SECURITY_AUTHENTICATION, &quot;simple&quot;);
+	   env.put(Context.SECURITY_PRINCIPAL, &quot;uid=&quot; + ACCOUNT + SEARCH_DN);  
+	   env.put(Context.SECURITY_CREDENTIALS, PASSWORD);
+	   try {
+			ctx = new InitialDirContext(env);
+		} catch (javax.naming.AuthenticationException e) {
+            System.out.println(&quot;认证失败&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;认证出错：&quot;);
+            e.printStackTrace();
+        }
+	    return ctx;
+	}
+	
+	public static void closeCtx() {
+		try {
+			ctx.close();
+		} catch (NamingException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean verifyPwd(String ldapPwd, String inputPwd) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance(&quot;SHA-1&quot;);
+		
+		if (ldapPwd.startsWith(&quot;{SSHA}&quot;)) {
+			ldapPwd = ldapPwd.substring(6);
+		} else if (ldapPwd.startsWith(&quot;{SHA}&quot;)) {
+			ldapPwd = ldapPwd.substring(5);
+		}
+		
+		byte[] ldapPwdByte = Base64.decode(ldapPwd);
+		byte[] shaCode, salt;
+		
+		if (ldapPwdByte.length &lt;= 20) {
+			shaCode = ldapPwdByte;
+			salt = new byte[0];
+		} else {
+			shaCode = new byte[20];
+			salt = new byte[ldapPwdByte.length - 20];
+			System.arraycopy(ldapPwdByte, 0, shaCode, 0, 20);
+			System.arraycopy(ldapPwdByte, 20, salt, 0, salt.length);
+		}
+		
+		md.update(inputPwd.getBytes());
+		md.update(salt);
+		
+		byte[] inputPwdByte = md.digest();
+		
+		return MessageDigest.isEqual(shaCode, inputPwdByte);
+	}
+}
+</code></pre>
+<h3 id="添加人员">添加人员</h3>
+<pre><code class="language-java">public static boolean addUser(String uid, String pwd) {
+	boolean success = false;
+	DirContext ctx = null;
+	try {
+		ctx = LdapUtil.getCtx();
+		BasicAttributes attrsbu = new BasicAttributes();
+		BasicAttribute objclassSet = new BasicAttribute(&quot;objectclass&quot;);
+		objclassSet.add(&quot;person&quot;);
+		objclassSet.add(&quot;top&quot;);
+		objclassSet.add(&quot;organizationalPerson&quot;);
+		objclassSet.add(&quot;inetOrgPerson&quot;);
+		attrsbu.put(objclassSet);
+		attrsbu.put(&quot;sn&quot;, uid);
+		attrsbu.put(&quot;uid&quot;, uid);
+		attrsbu.put(&quot;userPassword&quot;, pwd);
+		ctx.createSubcontext(&quot;cn=&quot; + uid + &quot;,ou=People&quot;, attrsbu);
+		ctx.close();
+		return true;
+	} catch (NamingException ex) {
+		try {
+			if (ctx != null) {
+				ctx.close();
+			}
+		} catch (NamingException namingException) {
+			namingException.printStackTrace();
+		}
+	}
+	return false;
+}
+</code></pre>
+<h3 id="用户验证">用户验证</h3>
+<pre><code class="language-java">public boolean checkPassword(String uid, String password) {
+	DirContext ctx = null;
+	String searchDn = &quot;dc=something,dc=com&quot;;
+	try {
+		ctx = LdapUtil.getCtx();
+		SearchControls searchControls = new SearchControls();
+		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+		String filter = &quot;(&amp;(objectClass=top)(uid=&quot; + uid + &quot;))&quot;;
+		NamingEnumeration&lt;SearchResult&gt; answer = ctx.search(searchDn, filter.toString(), searchControls);
+
+		while (answer.hasMoreElements()) {
+			Object obj = answer.nextElement();
+			if (obj instanceof SearchResult) {
+				SearchResult result = (SearchResult) obj;
+				Attributes attrs = result.getAttributes();
+				Attribute userPassword = attrs.get(&quot;userPassword&quot;);
+				String pwd = new String((byte[]) userPassword.get());
+				boolean check = LdapUtil.verifyPwd(pwd, password);
+				return check;
+			}
+		}
+		ctx.close();
+	} catch (NoSuchAlgorithmException e) {
+		try {
+			if (ctx != null) {
+				ctx.close();
+			}
+		} catch (NamingException namingException) {
+			namingException.printStackTrace();
+		}
+	} catch (NamingException ex) {
+		try {
+			if (ctx != null) {
+				ctx.close();
+				LdapUtil.closeCtx();
+			}
+		} catch (NamingException namingException) {
+			namingException.printStackTrace();
+		}
+	}
+	return false;
+}
+</code></pre>
+<h3 id="修改密码">修改密码</h3>
+<pre><code class="language-java">public static boolean updatePwdLdap(String uid, String pwd) {
+	boolean success = false;
+	DirContext ctx = null;
+	try {
+		ctx = LdapUtil.getCtx();
+		ModificationItem[] modificationItem = new ModificationItem[1];
+		modificationItem[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+				new BasicAttribute(&quot;userPassword&quot;, pwd));
+		ctx.modifyAttributes(&quot;cn=&quot; + uid + &quot;,ou=People&quot;, modificationItem);
+		ctx.close();
+		return true;
+	} catch (NamingException ex) {
+		try {
+			if (ctx != null) {
+				ctx.close();
+			}
+		} catch (NamingException namingException) {
+			namingException.printStackTrace();
+		}
+	}
+	return success;
+}
+</code></pre>
+<h3 id="删除用户">删除用户</h3>
+<pre><code class="language-java">public static boolean updatePwdLdap(String uid, String pwd) {
+	boolean success = false;
+	DirContext ctx = null;
+	try {
+		ctx = LdapUtil.getCtx();
+		ctx.destroySubcontext(&quot;cn=&quot; + uid);
+		ctx.close();
+		return true;
+	} catch (NamingException ex) {
+		try {
+			if (ctx != null) {
+				ctx.close();
+			}
+		} catch (NamingException namingException) {
+			namingException.printStackTrace();
+		}
+	}
+	return success;
+}
+</code></pre>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="http://www.zytrax.com/books/ldap/">http://www.zytrax.com/books/ldap/</a></li>
+</ul>
+
+                </div>
+            </article>
+        </div>
+
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">給我一個鍵盤，讓我改變世界</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank">
+<img src="/images/upyun_logo.png" height="24" /></a><br />
+<a href="https://beian.miit.gov.cn">闽ICP备2022002352号-1</a> 
+ Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="https://ikerwin.com/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>

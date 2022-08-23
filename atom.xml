@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://ikerwin.com</id>
+    <title>埋頭做事，抬頭裝逼</title>
+    <updated>2022-08-23T15:00:06.217Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://ikerwin.com"/>
+    <link rel="self" href="https://ikerwin.com/atom.xml"/>
+    <subtitle>給我一個鍵盤，讓我改變世界</subtitle>
+    <logo>https://ikerwin.com/images/avatar.png</logo>
+    <icon>https://ikerwin.com/favicon.ico</icon>
+    <rights>All rights reserved 2022, 埋頭做事，抬頭裝逼</rights>
+    <entry>
+        <title type="html"><![CDATA[Mac 配置 Apache 与 PHP 环境]]></title>
+        <id>https://ikerwin.com/post/mac-pei-zhi-apache-yu-php-huan-jing/</id>
+        <link href="https://ikerwin.com/post/mac-pei-zhi-apache-yu-php-huan-jing/">
+        </link>
+        <updated>2018-07-26T09:35:35.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[在 Java 使用 LDAP 进行用户操作]]></title>
+        <id>https://ikerwin.com/post/Java-LDAP/</id>
+        <link href="https://ikerwin.com/post/Java-LDAP/">
+        </link>
+        <updated>2017-03-31T08:21:50.000Z</updated>
+        <summary type="html"><![CDATA[<p>前一段时间单位的统一身份认证系统进行了升级，新版本不支持接口认证，就只能摸索一下和 LDAP 的对接。也鼓捣了一段时间，在这记录一下。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>前一段时间单位的统一身份认证系统进行了升级，新版本不支持接口认证，就只能摸索一下和 LDAP 的对接。也鼓捣了一段时间，在这记录一下。</p>
+]]></content>
+    </entry>
+</feed>

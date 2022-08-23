@@ -1,0 +1,241 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="description" content=""/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<title>Bitwarden 私有化部署 | 埋頭做事，抬頭裝逼</title>
+
+<link rel="shortcut icon" href="https://ikerwin.com/favicon.ico?v=1661266781801">
+
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://ikerwin.com/styles/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dockerfile.min.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.15.10/languages/dart.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.min.js"></script>
+<!-- DEMO JS -->
+<!--<script src="media/scripts/index.js"></script>-->
+
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.css">
+</head>
+<body>
+<div class="main gt-bg-theme-color-first">
+    <nav class="navbar navbar-expand-lg">
+    <div class="navbar-brand">
+        <img class="user-avatar" src="/images/avatar.png" alt="头像">
+        <div class="site-name gt-c-content-color-first">
+            埋頭做事，抬頭裝逼
+        </div>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars gt-c-content-color-first" style="font-size: 18px"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="navbar-nav mr-auto" style="text-align: center">
+            
+                <div class="nav-item">
+                    
+                        <a href="/" class="menu gt-a-link">
+                            首页
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/archives" class="menu gt-a-link">
+                            归档
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/tags" class="menu gt-a-link">
+                            标签
+                        </a>
+                    
+                </div>
+            
+                <div class="nav-item">
+                    
+                        <a href="/post/about" class="menu gt-a-link">
+                            关于
+                        </a>
+                    
+                </div>
+            
+        </div>
+        <div style="text-align: center">
+            <form id="gridea-search-form" style="position: relative" data-update="1661266781801" action="/search/index.html">
+                <input class="search-input" autocomplete="off" spellcheck="false" name="q" placeholder="搜索文章" />
+                <i class="fas fa-search gt-c-content-color-first" style="position: absolute; top: 9px; left: 10px;"></i>
+            </form>
+        </div>
+    </div>
+</nav>
+
+    <div class="post-container">
+        <div class="post-detail gt-bg-theme-color-second">
+            <article class="gt-post-content">
+                <h2 class="post-title">
+                    Bitwarden 私有化部署
+                </h2>
+                <div class="post-info">
+                    <time class="post-time gt-c-content-color-first">
+                        · 2022-02-16 ·
+                    </time>
+                    
+                </div>
+                <div class="post-content">
+                    <h2 id="安装-docker">安装 Docker</h2>
+<p>如果你的服务器上已经安装了 Docker 和 Docker Compose，这一步就可以跳过了。Docker 要求 CentOS 系统的内核版本高于 3.10，可以运行 <code>uname -r</code> 查看版本。</p>
+<pre><code class="language-bash"># 1、（可选）更新系统的软件包
+yum update -y
+
+# 2、安装 docker 依赖的软件包
+yum install -y yum-utils
+
+# 3、添加 docker 的 yum 源
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+# 4、通过 yum 安装 docker
+sudo yum install docker-ce docker-ce-cli containerd.io
+# 如上述命令出错，可能是系统上已有旧版本 Docker，需要先卸载旧版本
+# 卸载命令：yum remove docker docker-common docker-selinux docker-engine docer-io
+
+# 5、启动 Docker 服务并设置开机启动
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 6、测试 docker 是否安装成功 (查看版本号)
+docker version
+# 有 client 和 service 两部分表示 docker 安装并启动成功了（有部分错误不用管）
+</code></pre>
+<h2 id="安装-docker-compose">安装 Docker Compose</h2>
+<pre><code class="language-bash"># 1、下载最新版本的 docker-compose，安装稳定版的 v1，v2 有大变化
+sudo curl -L &quot;https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)&quot; -o /usr/local/bin/docker-compose
+
+# 2、授予可执行权限
+sudo chmod +x /usr/local/bin/docker-compose
+
+# 4、测试是否安装成功（可能需要重启系统）
+docker-compose -v
+# 安装成功会显示 docker-compose 版本
+</code></pre>
+<p><a href="https://docs.docker.com/compose/cli-command/#install-on-linux"></a></p>
+<h2 id="安装-bitwarden-服务端">安装 Bitwarden 服务端</h2>
+<p>确认服务器已成功安装好 Docker 和 Docker Compose 之后，我们就可以来安装 Bitwarden 了。其实 Bitwarden 官方就已经提供了非常方便的一键安装脚本，我们只需执行即可。</p>
+<pre><code class="language-bash"># 1、下载 Bitwarden 的安装脚本
+curl -Lso bitwarden.sh https://go.btwrdn.co/bw-sh &amp;&amp; chmod 700 bitwarden.sh
+
+# 2、执行安装程序
+./bitwarden.sh install
+# 由于 docker 镜像的体积比较大，国内网络可能遇到中途卡住不动的情况，可按下 Ctrl+C 终止再重试，多次不行的话，可以参考网上的其他教程为 Docker 配置代里。
+</code></pre>
+<p>接着，安装脚本会一步步提示你输入，下面是部分重点选项：</p>
+<p>Enter the domain name for your Bitwarden instance<br>
+输入你要给 Bitwarden 分配的域名，这里例子为 bitwarden.iplaysoft.com<br>
+Do you want to use Let’s Encrypt to generate a free SSL certificate? (y/n)<br>
+是否使用 Let's Encrypt 自动生成免费的 SSL 证书，一般选 y (你有自己的证书也可以选 n，后面需要配置证书的路径)<br>
+Enter the database name for your Bitwarden instance<br>
+输入用于 Bitwarden 的数据库名称<br>
+Enter your installation id / Enter your installation key<br>
+你需要访问 https://bitwarden.com/host 获取一组安装 ID 和安装密钥 Key (官网被 xx 无法访问的话，只能各显神通了)<br>
+修改配置文件 (端口号、SSL 证书等)：<br>
+如果你需要使用自己的 SSL 证书、修改默认的端口号等需求，可以编辑配置文件 ./bwdata/config.yml。比如你的服务器本身就有网站占用了 80、443 端口，那么可以修改配置里的 http_port 和 https_port 端口号来避免冲突。比如我改成 8080 和 8888，这样日后我访问时的域名就是 https://bitwarden.iplaysoft.com:8888 了。<br>
+要注意的是，腾讯云、阿里云等机器默认的「安全组规则」会阻止非常用端口的访问，如使用非 80/443 端口，需要登录后台修改安全组规则允许你设置的端口才行。<br>
+另外，如果你使用「宝塔面板」，或者懂得修改 Nginx 的配置，也可以对你的 bitwarden 服务进行“反代”，有建站经验的朋友，可以查查相关的资料，搞定应该不难。<br>
+修改完后，必须执行一下 ./bitwarden.sh rebuild 命令才能让新配置生效。<br>
+(可选) 修改环境配置文件：<br>
+另外，在环境配置文件 ./bwdata/env/global.override.env 里还有诸如 SMTP、启用 Yubico、启用系统管理员门户、是否禁止用户注册等设置。<br>
+其中，如果你的 Bitwarden 打算是私人使用，建议在注册完自己账号之后，改成 “禁止用户注册”，对应的项为：globalSettings__disableUserRegistration=false<br>
+修改此文件后，需要重启 Bitwarden 容器才能生效，重启命令为：<br>
+./bitwarden.sh restart<br>
+启动 Bitwarden 服务<br>
+./bitwarden.sh start<br>
+首次启动 Bitwarden 可能时间会比较长，因为安装脚本要从 Docker Hub 下载全部需要的组件的镜像，比如 MySQL 体积就比较大，耐心等待完成即可。之后，可以使用 docker ps 命令来查看是否有 Bitwarden 的进程。</p>
+<p>“OK，至此一切搞定了！”</p>
+<p>正常的话就能通过域名访问了，例如 https://bitwarden.iplaysoft.com:8888。这里就是你自己的 Bitwarden 私人密码库网页版了，之后就能去下载各种客户端使用了，登录时填入咱自己的 Bitwarden 服务器地址即可。</p>
+<p>bitwarden 密码管理器客户端</p>
+<p>尽管目前无论从颜值还是使用体验上都仍比不上付费的 1Password，但 Bitwarden 免费开源、支持私有化部署也有着相当的优势。上手习惯之后，你会发现 Bitwarden 还是挺好用的，毕竟它也拥有全平台客户端支持，基本能满足一般人对密码管理器的所有期待。而且它也支持无缝导入 1Password 的数据，确实算是相当不错的 1Password 免费替代方案了。</p>
+<p>后续维护命令：<br>
+bitwarden.sh 脚本可以使用的命令<br>
+install	启动安装程序<br>
+start	启动所有容器<br>
+restart	重新启动所有容器（与启动相同）<br>
+stop	停止所有容器<br>
+update	更新 Bitwarden 版本<br>
+updatedb	更新/初始化数据库<br>
+updateself	更新 bitwarden.sh 文件本身<br>
+updateconf	更新所有容器，而无需重新启动正在运行的实例<br>
+renewcert	续订证书<br>
+rebuild	重建 config.yml 的配置<br>
+help	列出所有命令<br>
+(可选) 备份 Bitwarden 密码数据<br>
+Bitwarden 的全部数据都保存在 ./bwdata 目录下，建议你定期备份这个目录的全部内容到其他地方以防意外。其中的内容包括：</p>
+<p>./bwdata/env - 实例的环境变量，包括数据库和证书密码<br>
+./bwdata/core/attachments - 实例的密码库项目的附件<br>
+./bwdata/mssql/data - 实例的数据库数据<br>
+每天 Bitwarden 也会自动对 MySQL 容器 中的数据库进行备份。备份文件默认保存在 ./bwdata/mssql/backups 目录中，保留 30 天。</p>
+<p>https://www.iplaysoft.com/bitwarden-self-host.html</p>
+
+                </div>
+            </article>
+        </div>
+
+        
+
+        
+
+        
+
+        
+
+        <div class="site-footer gt-c-content-color-first">
+    <div class="slogan gt-c-content-color-first">給我一個鍵盤，讓我改變世界</div>
+    <div class="social-container">
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+    </div>
+    <div class="footer-info">
+        <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank">
+<img src="/images/upyun_logo.png" height="24" /></a><br />
+<a href="https://beian.miit.gov.cn">闽ICP备2022002352号-1</a> 
+ Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+    </div>
+    <div>
+        Theme by <a href="https://imhanjie.com/" target="_blank">imhanjie</a>, Powered by <a
+                href="https://github.com/getgridea/gridea" target="_blank">Gridea | <a href="https://ikerwin.com/atom.xml" target="_blank">RSS</a></a>
+    </div>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+    </div>
+</div>
+</body>
+</html>
